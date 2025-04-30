@@ -1,17 +1,33 @@
 "use client";
 
-import { Scanner } from "@yudiel/react-qr-scanner";
+import { Scanner, useDevices } from "@yudiel/react-qr-scanner";
 import { useScannerResult } from "../hook/use-scanner-result";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function QrCodePage() {
 	const { setScannerResult } = useScannerResult();
 	const router = useRouter();
 
+	const devices = useDevices();
+	const [deviceId, setDeviceId] = useState<string | undefined>(undefined);
 	return (
 		<div className="w-full p-8">
 			<div className="flex flex-col justify-center items-center">
 				<h1 className="text-2xl font-bold p-4">Escanear</h1>
+				<select className="py-4" onChange={(e) => setDeviceId(e.target.value)}>
+					<option className="bg-background text-foreground" value={undefined}>
+						Selecionar câmera
+					</option>
+					{devices.map((device, index) => (
+						<option
+							className="bg-background text-foreground"
+							key={index}
+							value={device.deviceId}>
+							{device.label}
+						</option>
+					))}
+				</select>
 				<Scanner
 					formats={[
 						"qr_code",
@@ -37,7 +53,8 @@ export default function QrCodePage() {
 						"upc_e",
 					]}
 					constraints={{
-						facingMode: "environment",
+						facingMode: { exact: "user" },
+						deviceId: deviceId,
 					}}
 					onScan={(detectedCodes) => {
 						setScannerResult(detectedCodes[0].rawValue);
@@ -49,7 +66,7 @@ export default function QrCodePage() {
 					styles={{ container: { height: "500px", width: "500px" } }}
 					components={{
 						audio: true,
-						onOff: false,
+						onOff: true,
 						torch: true,
 						zoom: true,
 						finder: false,
