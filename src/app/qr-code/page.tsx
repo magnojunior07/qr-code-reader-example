@@ -1,33 +1,26 @@
 "use client";
 
-import { Scanner, useDevices } from "@yudiel/react-qr-scanner";
+import { Scanner } from "@yudiel/react-qr-scanner";
 import { useScannerResult } from "../hook/use-scanner-result";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+
+import { SwitchCameraIcon } from "lucide-react";
 
 export default function QrCodePage() {
 	const { setScannerResult } = useScannerResult();
 	const router = useRouter();
 
-	const devices = useDevices();
-	const [deviceId, setDeviceId] = useState<string | undefined>(undefined);
+	const [facingMode, setFacingMode] = useState("environment");
+
+	function handleFacingModeChange() {
+		setFacingMode((prev) => (prev === "environment" ? "user" : "environment"));
+	}
+
 	return (
 		<div className="w-full p-8">
 			<div className="flex flex-col justify-center items-center">
 				<h1 className="text-2xl font-bold p-4">Escanear</h1>
-				<select className="py-4" onChange={(e) => setDeviceId(e.target.value)}>
-					<option className="bg-background text-foreground" value={undefined}>
-						Selecionar câmera
-					</option>
-					{devices.map((device, index) => (
-						<option
-							className="bg-background text-foreground"
-							key={index}
-							value={device.deviceId}>
-							{device.label}
-						</option>
-					))}
-				</select>
 				<Scanner
 					formats={[
 						"qr_code",
@@ -53,8 +46,7 @@ export default function QrCodePage() {
 						"upc_e",
 					]}
 					constraints={{
-						facingMode: { exact: "user" },
-						deviceId: deviceId,
+						facingMode: facingMode,
 					}}
 					onScan={(detectedCodes) => {
 						setScannerResult(detectedCodes[0].rawValue);
@@ -74,6 +66,13 @@ export default function QrCodePage() {
 					allowMultiple={false}
 					scanDelay={2000}
 				/>
+
+				<button
+					type="button"
+					onClick={handleFacingModeChange}
+					className="p-4 my-3 bg-blue-500 text-white rounded flex items-center hover:bg-blue-600 hover:cursor-pointer">
+					<SwitchCameraIcon />
+				</button>
 			</div>
 		</div>
 	);
